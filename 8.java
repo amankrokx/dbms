@@ -1,5 +1,5 @@
 import java.util.Scanner;  
- public class ford 
+class ford 
  {   
    private int D[]; 
    private int num_ver;     
