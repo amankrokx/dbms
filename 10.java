@@ -1,75 +1,86 @@
-import java.net.*; 
-import java.net.*; 
-import java.io.*; 
+import java.io.*;
+import java.net.*;
+import java.net.*;
 
-class UDPServer 
-{ 
-public static void main(String args[])throws Exception 
-{ 
-DatagramSocket serverSocket = new DatagramSocket(9876); 
-byte[] receiveData=new byte[1024]; 
-byte[] sendData=new byte[1024]; 
-while(true) 
-{ 
-System.out.println("Server is Up"); 
+class UDPServer {
 
-DatagramPacket receivePacket=new DatagramPacket(receiveData,receiveData.length); 
+  public static void main(String args[]) throws Exception {
+    DatagramSocket serverSocket = new DatagramSocket(9876);
+    byte[] receiveData = new byte[1024];
+    byte[] sendData = new byte[1024];
+    while (true) {
+      System.out.println("Server is Up");
 
-serverSocket.receive(receivePacket); 
+      DatagramPacket receivePacket = new DatagramPacket(
+        receiveData,
+        receiveData.length
+      );
 
-String sentence=new String(receivePacket.getData()); 
+      serverSocket.receive(receivePacket);
 
-System.out.println("RECEIVED:"+sentence); 
+      String sentence = new String(receivePacket.getData());
 
-InetAddress IPAddress=receivePacket.getAddress(); 
+      System.out.println("RECEIVED:" + sentence);
 
-int port=receivePacket.getPort(); 
+      InetAddress IPAddress = receivePacket.getAddress();
 
-String capitalizedSentence=sentence.toUpperCase(); 
+      int port = receivePacket.getPort();
 
-sendData=capitalizedSentence.getBytes(); 
+      String capitalizedSentence = sentence.toUpperCase();
 
-DatagramPacket sendPacket=new 
-DatagramPacket(sendData,sendData.length,IPAddress,port); 
+      sendData = capitalizedSentence.getBytes();
 
+      DatagramPacket sendPacket = new DatagramPacket(
+        sendData,
+        sendData.length,
+        IPAddress,
+        port
+      );
 
-serverSocket.send(sendPacket); 
-} 
-} 
+      serverSocket.send(sendPacket);
+    }
+  }
 }
 
-class UDPClient 
-{ 
-public static void main(String[] args)throws Exception 
-{ 
-BufferedReader inFromUser=new BufferedReader(new InputStreamReader(System.in)); 
+class UDPClient {
 
-DatagramSocket clientSocket=new DatagramSocket(); 
+  public static void main(String[] args) throws Exception {
+    BufferedReader inFromUser = new BufferedReader(
+      new InputStreamReader(System.in)
+    );
 
-InetAddress IPAddress=InetAddress.getByName("localhost"); 
+    DatagramSocket clientSocket = new DatagramSocket();
 
-byte[] sendData=new byte[1024]; 
-byte[] receiveData=new byte[1024]; 
+    InetAddress IPAddress = InetAddress.getByName("localhost");
 
-System.out.println("Enter the sting to be converted in to Upper case"); 
-String sentence=inFromUser.readLine(); 
+    byte[] sendData = new byte[1024];
+    byte[] receiveData = new byte[1024];
 
-sendData=sentence.getBytes(); 
+    System.out.println("Enter the sting to be converted in to Upper case");
+    String sentence = inFromUser.readLine();
 
-DatagramPacket sendPacket=new 
-DatagramPacket(sendData,sendData.length,IPAddress,9876); 
+    sendData = sentence.getBytes();
 
+    DatagramPacket sendPacket = new DatagramPacket(
+      sendData,
+      sendData.length,
+      IPAddress,
+      9876
+    );
 
-clientSocket.send(sendPacket); 
+    clientSocket.send(sendPacket);
 
-DatagramPacket receivePacket=new DatagramPacket(receiveData,receiveData.length); 
+    DatagramPacket receivePacket = new DatagramPacket(
+      receiveData,
+      receiveData.length
+    );
 
-clientSocket.receive(receivePacket); 
+    clientSocket.receive(receivePacket);
 
-String modifiedSentence=new String(receivePacket.getData()); 
+    String modifiedSentence = new String(receivePacket.getData());
 
-System.out.println("FROM SERVER:"+modifiedSentence); 
+    System.out.println("FROM SERVER:" + modifiedSentence);
 
-clientSocket.close(); 
-} 
+    clientSocket.close();
+  }
 }

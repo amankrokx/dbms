@@ -1,73 +1,75 @@
-import java.net.*; 
-import java.io.*; 
-class TCPS 
-{ 
-public static void main(String[] args) throws Exception 
-{ 
-ServerSocket sersock=new ServerSocket(4000); 
-System.out.println("Server ready for connection"); 
+import java.io.*;
+import java.net.*;
 
-Socket sock=sersock.accept(); 
+class TCPS {
 
-System.out.println("Connection Is successful and waiting for chatting"); 
+  public static void main(String[] args) throws Exception {
+    ServerSocket sersock = new ServerSocket(4000);
+    System.out.println("Server ready for connection");
 
-InputStream istream=sock.getInputStream(); 
+    Socket sock = sersock.accept();
 
-BufferedReader fileRead=new BufferedReader(new InputStreamReader(istream)); 
+    System.out.println("Connection Is successful and waiting for chatting");
 
-String fname=fileRead.readLine(); 
+    InputStream istream = sock.getInputStream();
 
-BufferedReader ContentRead=new BufferedReader(new FileReader(fname)); 
+    BufferedReader fileRead = new BufferedReader(
+      new InputStreamReader(istream)
+    );
 
-OutputStream ostream=sock.getOutputStream(); 
+    String fname = fileRead.readLine();
 
-PrintWriter pwrite=new PrintWriter(ostream,true); 
+    BufferedReader ContentRead = new BufferedReader(new FileReader(fname));
 
-String str; 
+    OutputStream ostream = sock.getOutputStream();
 
-while((str=ContentRead.readLine())!=null){ 
+    PrintWriter pwrite = new PrintWriter(ostream, true);
 
-pwrite.println(str); 
+    String str;
 
-} 
-sock.close(); 
-sersock.close(); 
-pwrite.close(); 
-fileRead.close(); 
-ContentRead.close(); 
-} 
+    while ((str = ContentRead.readLine()) != null) {
+      pwrite.println(str);
+    }
+    sock.close();
+    sersock.close();
+    pwrite.close();
+    fileRead.close();
+    ContentRead.close();
+  }
 }
 
-class TCPC 
-{ 
-public static void main(String[] args) throws Exception 
-{ 
-Socket sock=new Socket("127.0.01",4000); 
+class TCPC {
 
-System.out.println("Enter the filename"); 
+  public static void main(String[] args) throws Exception {
+    Socket sock = new Socket("127.0.0.1", 4000);
 
-BufferedReader keyRead=new BufferedReader(new InputStreamReader(System.in)); 
+    System.out.println("Enter the filename");
 
-String fname=keyRead.readLine(); 
+    BufferedReader keyRead = new BufferedReader(
+      new InputStreamReader(System.in)
+    );
 
-OutputStream ostream=sock.getOutputStream(); 
+    String fname = keyRead.readLine();
 
-PrintWriter pwrite=new PrintWriter(ostream,true); 
+    OutputStream ostream = sock.getOutputStream();
 
-pwrite.println(fname); 
+    PrintWriter pwrite = new PrintWriter(ostream, true);
 
-InputStream istream=sock.getInputStream(); 
+    pwrite.println(fname);
 
-BufferedReader socketRead=new BufferedReader(new InputStreamReader(istream)); 
+    InputStream istream = sock.getInputStream();
 
-String str; 
-while((str=socketRead.readLine())!=null) 
-{ 
-System.out.println(str); 
-} 
+    BufferedReader socketRead = new BufferedReader(
+      new InputStreamReader(istream)
+    );
 
-pwrite.close(); 
-socketRead.close(); 
-keyRead.close(); 
-} 
+    String str;
+    while ((str = socketRead.readLine()) != null) {
+      System.out.println(str);
+    }
+
+    pwrite.close();
+    socketRead.close();
+    keyRead.close();
+  }
 }

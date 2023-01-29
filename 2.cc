@@ -1,7 +1,13 @@
-#include <iostream> #include"ns3/core-module.h"
-#include "ns3/network-module.h" #include "ns3/csma-module.h" #include "ns3/applications-module.h" #include"ns3/internet-apps-module.h" #include"ns3/internet-module.h"
+#include <iostream> 
+#include"ns3/core-module.h"
+#include "ns3/network-module.h" 
+#include "ns3/csma-module.h" 
+#include "ns3/applications-module.h" 
+#include"ns3/internet-apps-module.h" 
+#include"ns3/internet-module.h"
 
-using namespace ns3; NS_LOG_COMPONENT_DEFINE("Lab-Program-2");
+using namespace ns3; 
+NS_LOG_COMPONENT_DEFINE("Lab-Program-2");
 static void PingRtt (std::string context, Time rtt)
 {
 std::cout<< context <<""<<rtt<< std::endl;

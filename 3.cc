@@ -1,8 +1,12 @@
-#include "ns3/core-module.h" #include "ns3/network-module.h" #include "ns3/internet-module.h" #include"ns3/applications-module.h" #include <iostream>
+#include "ns3/core-module.h" 
+#include "ns3/network-module.h" 
+#include "ns3/internet-module.h" 
+#include "ns3/applications-module.h" 
+#include <iostream>
 #include "ns3/csma-module.h"
-#include "ns3/network-application-helper.h" using namespacens3;
-NS_LOG_COMPONENT_DEFINE ("3rd LabProgram"); using namespacens3;
-NS_LOG_COMPONENT_DEFINE ("3rd Lab Program");
+#include "ns3/network-application-helper.h" 
+using namespace ns3;
+NS_LOG_COMPONENT_DEFINE ("3rd LabProgram");
 
 int
 main (int argc, char *argv[])
