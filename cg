@@ -1,0 +1,495 @@
+4.1 Program
+#include<stdlib.h>
+#include<stdio.h>
+#include<GL/glut.h>
+#include<math.h>
+float v[8][3]={{-1,-1,1},{-1,1,1},{1,1,1},{1,-1,1},{-1,-1,-
+1},{-1,1,-1},{1,1,-1},{1,-1,-1}};
+float
+c[8][3]={{0,0,1},{0,1,1},{1,1,1},{1,0,1},{0,0,0},{0,1,0},{1,1,0
+},{1,0,0}};
+float theta[3]={0,0,0};
+int flag=2;
+void myinit()
+{
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ glOrtho(-2,2,-2,2,2,20);
+ glMatrixMode(GL_MODELVIEW);
+}
+int viewer[3]={0,0,2};
+void mykey(unsigned char key,int x,int y)
+{
+ if(key=='x')viewer[0]--;
+ if(key=='X')viewer[0]++;
+ if(key=='y')viewer[1]--;
+ if(key=='Y')viewer[1]++;
+ if(key=='z')viewer[2]--;
+ if(key=='Z')viewer[2]++;
+ glutPostRedisplay();
+}
+void reshape(int w,int h)
+{
+ glViewport(0,0,w,h);
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ if(w<=h)
+ glFrustum(2,2,2*(GLfloat)h/(GLfloat)w,
+ 2*(GLfloat)h/(GLfloat)w,2,20);
+ else
+ glFrustum(2*(GLfloat)h/(GLfloat)w,
+ 2*(GLfloat)h/(GLfloat)w,-2,2,2,20);
+ glMatrixMode(GL_MODELVIEW);
+}
+void mousefunc(int button,int status,int x,int y)
+{
+ if(button==GLUT_LEFT_BUTTON&&status==GLUT_DOWN)
+ flag=2;
+ if(button==GLUT_MIDDLE_BUTTON&&status==GLUT_DOWN)
+ flag=1;
+ if(button==GLUT_RIGHT_BUTTON&&status==GLUT_DOWN)
+ flag=0;
+ theta[flag]++;
+ if(theta[flag]>360)theta[flag]=0;
+ glutPostRedisplay();
+}
+void drawpoly(int a,int b,int c1,int d)
+{
+ glBegin(GL_POLYGON);
+ glColor3fv(c[a]);
+glVertex3fv(v[a]);
+glColor3fv(c[b]);
+glVertex3fv(v[b]);
+ glColor3fv(c[c1]);
+ glVertex3fv(v[c1]);
+glColor3fv(c[d]);
+glVertex3fv(v[d]);
+ glEnd();
+}
+void colorcube()
+{
+ drawpoly(0,1,2,3);
+ drawpoly(0,1,5,4);
+ drawpoly(1,5,6,2);
+ drawpoly(4,5,6,7);
+ drawpoly(3,2,6,7);
+ drawpoly(0,4,7,3);
+}
+void display()
+{
+ glClearColor(1,1,1,1);
+ glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+ glColor3f(1,0,0);
+ glEnable(GL_DEPTH_TEST);
+ glLoadIdentity();
+ gluLookAt(viewer[0],viewer[1],viewer[2],0,0,0,0,1,0);
+ glRotatef(theta[0],1,0,0);//x
+ glRotatef(theta[1],0,1,0);//y
+ glRotatef(theta[2],0,0,1);//z
+ colorcube();
+ glFlush();
+ glutSwapBuffers();
+}
+void main()
+{
+ glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE GLUT_DEPTH);
+ glutInitWindowPosition(100,100);
+ glutInitWindowSize(500,500);
+ glutCreateWindow("cube with camera movement");
+ myinit();
+ glutDisplayFunc(display);
+ glutMouseFunc(mousefunc);
+ glutKeyboardFunc(mykey);
+ glutReshapeFunc(reshape);
+ glutMainLoop();
+}
+
+
+5.1 Program
+//Cohen Sutherland Line clipping Algorithm
+#include<stdio.h>
+#include<GL/glut.h>
+#define opcode int
+enum {top=0x8,bottom=0x4,left=0x1,right=0x2};
+float xmin,xmax,ymin,ymax,umin,umax,vmin,vmax;
+float x1,y1,x2,y2;
+void myinit()
+{
+ glMatrixMode(GL_PROJECTION);
+ glLoadIdentity();
+ gluOrtho2D(0,500,0,500);
+ glMatrixMode(GL_MODELVIEW);
+}
+opcode compopcode(float x,float y)
+{
+int p=0;
+if(x<xmin)p=p|left;
+if(x>xmax)p=p|right;
+if(y<ymin)p=p|bottom;
+if(y>ymax)p=p|top;
+return p;
+}
+void cohensutherland()
+{
+bool accept=false,done=false;
+int x=0,y=0;
+opcode p1,p2,p;
+p1=compopcode(x1,y1);
+p2=compopcode(x2,y2);
+float m=(y2-y1)/(x2-x1);
+do{
+if(!(p1|p2))
+{
+accept=true;
+done=true;
+}
+else if(p1&p2)
+done=true;
+else
+{
+p=p1?p1:p2;
+if(p&bottom)
+{
+y=ymin;
+x=x1+(ymin-y1)/m;
+}
+if(p&top)
+{
+y=ymax;
+x=x1+(ymax-y1)/m;
+}
+if(p&right)
+{
+x=xmax;
+y=y1+(xmax-x1)*m;
+}
+if(p&left)
+{
+x=xmin;
+y=y1+(xmin-x1)*m;
+}
+if(p==p2)
+{
+x2=x;
+y2=y;
+p2=compopcode(x2,y2);
+}
+if(p==p1)
+{
+x1=x;
+y1=y;
+p1=compopcode(x1,y1);
+}
+}
+}while(!done);
+if(accept)
+{
+float sx=(umax-umin)/(xmax-xmin);
+float sy=(vmax-vmin)/(ymax-ymin);
+x1=sx*x1+umin-sx*xmin;
+y1=sy*y1+vmin-sy*ymin;
+x2=sx*x2+umin-sx*xmin;
+y2=sy*y2+vmin-sy*ymin;
+}
+glBegin(GL_LINES);
+glVertex2f(x1,y1);
+glVertex2f(x2,y2);
+glEnd();
+glFlush();
+}
+void display()
+{
+glClearColor(1,1,1,1);
+glClear(GL_COLOR_BUFFER_BIT);
+glColor3f(1,0,0);
+glBegin(GL_LINE_LOOP);
+glVertex2f(xmin,ymin);
+glVertex2f(xmin,ymax);
+glVertex2f(xmax,ymax);
+glVertex2f(xmax,ymin);
+glEnd();
+glColor3f(0,0,1);
+glBegin(GL_LINES);
+glVertex2f(x1,y1);
+glVertex2f(x2,y2);
+glEnd();
+glColor3f(0,1,0);
+glBegin(GL_LINE_LOOP);
+glVertex2f(umin,vmin);
+glVertex2f(umin,vmax);
+glVertex2f(umax,vmax);
+glVertex2f(umax,vmin);
+glEnd();
+cohensutherland();
+glFlush();
+}
+void main()
+{
+glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+glutInitWindowPosition(100,100);
+glutInitWindowSize(500,500);
+glutCreateWindow("CLIPPING ALGORITHM");
+myinit();
+printf("Enter the clipping window points
+xmin,xmax,ymin,ymax");
+scanf("%f%f%f%f",&xmin,&xmax,&ymin,&ymax);
+printf("Enter the display window points
+umin,umax,vmin,vmax");
+scanf("%f%f%f%f",&umin,&umax,&vmin,&vmax);
+printf("\nEnter the first point x1,y1\n");
+scanf("%f%f",&x1,&y1);
+printf("\nEnter the second point x2,y2\n");
+scanf("%f%f",&x2,&y2);
+glutDisplayFunc(display);
+glutMainLoop();
+}
+
+6.1 Program
+//Teapot
+#include<stdlib.h>
+#include<stdio.h>
+#include<conio.h>
+#include<math.h>
+#include<GL/glut.h>
+void myinit()
+{
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+glOrtho(-100,200,-100,200,-200,200);
+glMatrixMode(GL_MODELVIEW);
+}
+void drawtable()
+{
+//table top
+glPushMatrix();
+glColor3f(0,1,0);
+glTranslatef(50,40,-50);
+glScalef(50,5,50);
+glutSolidCube(1);
+glPopMatrix();
+//1 st leg
+glPushMatrix();
+glColor3f(1,1,0);
+glTranslatef(30,20,-30);
+glScalef(5,35,5);
+glutSolidCube(1);
+glPopMatrix();
+//2nd leg 
+glPushMatrix();
+glColor3f(1,1,0);
+glTranslatef(70,20,-30);
+glScalef(5,35,5);
+glutSolidCube(1);
+glPopMatrix();
+// 3rd leg
+glPushMatrix();
+glColor3f(1,1,0);
+glTranslatef(30,20,-70);
+glScalef(5,35,5);
+glutSolidCube(1);
+glPopMatrix();
+//4 th leg
+glPushMatrix();
+glColor3f(1,1,0);
+glTranslatef(70,20,-70);
+glScalef(5,35,5);
+glutSolidCube(1);
+glPopMatrix();
+//floor
+glPushMatrix();
+glColor3f(1,0,1);
+glTranslatef(50,0,-50);
+glScalef(100,5,100);
+glutSolidCube(1);
+glPopMatrix();
+//left wall
+glPushMatrix();
+glColor3f(1,0,0);
+glRotatef(90,0,0,1);
+glTranslatef(50,0,-50);
+glScalef(100,5,100);
+glutSolidCube(1);
+glPopMatrix();
+//backside wall
+glPushMatrix();
+glColor3f(1,0,0);
+glTranslatef(50,50,-100);
+glScalef(100,100,5);
+glutSolidCube(1);
+glPopMatrix();
+//tea pot
+glPushMatrix();
+glTranslatef(50,50,-50);
+glRotatef(30,0,1,0);
+glutSolidTeapot(10);
+glPopMatrix();
+}
+void display()
+{
+glClearColor(0,0,0,1);
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+GLfloat mat_ambient[]={.7,.7,.7,1};
+GLfloat mat_diffuse[]={.5,.5,.5,1};
+GLfloat mat_spec[]={1,1,1,1};
+GLfloat mat_shininess[]={50};
+glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
+glMaterialfv(GL_FRONT,GL_DIFFUSE,mat_diffuse);
+glMaterialfv(GL_FRONT,GL_SPECULAR,mat_spec);
+glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
+GLfloat light_int[]={.7,.7,.7,1};
+GLfloat lightpos[]={100,100,100};
+glLightfv(GL_LIGHT0,GL_POSITION,lightpos);
+glLightfv(GL_LIGHT0,GL_DIFFUSE,light_int);
+glMatrixMode(GL_MODELVIEW);
+glLoadIdentity();
+gluLookAt(25,25,50,0,0,-25,0,1,0);
+glMatrixMode(GL_MODELVIEW);
+drawtable();
+glFlush();
+}
+void main()
+{
+glutInitDisplayMode(GLUT_RGB | GLUT_SINGLE);
+glutInitWindowSize(500,500);
+glutInitWindowPosition(100,100);
+glutCreateWindow("Scene");
+myinit();
+glutDisplayFunc(display);
+glEnable(GL_LIGHTING);
+glEnable(GL_LIGHT0 );
+glShadeModel(GL_SMOOTH);
+glEnable(GL_NORMALIZE);
+glEnable(GL_DEPTH_TEST);
+glutMainLoop();
+}
+
+
+8.1 Program
+// Bezier Curve
+#include<GL/glut.h>
+#include<stdio.h>
+#include<math.h>
+#define PI 3.1416
+GLsizei winWidth = 600, winHeight = 600;
+GLfloat xwcMin = 0.0, xwcMax = 130.0;
+GLfloat ywcMin = 0.0, ywcMax = 130.0;
+typedef struct wcPt3D
+{
+GLfloat x, y, z;
+};
+void bino(GLint n, GLint *C)
+{
+GLint k, j;
+for(k=0;k<=n;k++)
+{
+C[k]=1;
+for(j=n;j>=k+1; j--)
+C[k]*=j;
+for(j=n-k;j>=2;j--)
+C[k]/=j;
+}
+}
+void computeBezPt(GLfloat u, wcPt3D *bezPt, GLint nCtrlPts,
+wcPt3D *ctrlPts, GLint *C)
+{
+GLint k, n=nCtrlPts-1;
+GLfloat bezBlendFcn;
+bezPt ->x =bezPt ->y = bezPt->z=0.0;
+for(k=0; k< nCtrlPts; k++)
+{
+bezBlendFcn = C[k] * pow(u, k) * pow( 1-u, n-k);
+bezPt ->x += ctrlPts[k].x * bezBlendFcn;
+bezPt ->y += ctrlPts[k].y * bezBlendFcn;
+bezPt ->z += ctrlPts[k].z * bezBlendFcn;
+}
+}
+void bezier(wcPt3D *ctrlPts, GLint nCtrlPts, GLint
+nBezCurvePts)
+{
+wcPt3D bezCurvePt;
+GLfloat u;
+GLint *C, k;
+C= new GLint[nCtrlPts];
+bino(nCtrlPts-1, C);
+glBegin(GL_LINE_STRIP);
+for(k=0; k<=nBezCurvePts; k++)
+{
+u=GLfloat(k)/GLfloat(nBezCurvePts);
+computeBezPt(u, &bezCurvePt, nCtrlPts, ctrlPts, C);
+glVertex2f(bezCurvePt.x, bezCurvePt.y);
+}
+glEnd();
+delete[]C;
+}
+void displayFcn()
+{
+GLint nCtrlPts = 4, nBezCurvePts =20;
+static float theta = 0;
+wcPt3D ctrlPts[4] = {
+{20, 100, 0},
+{30, 110, 0},
+{50, 90, 0},
+{60, 100, 0}};
+ctrlPts[1].x +=10*sin(theta * PI/180.0);
+ctrlPts[1].y +=5*sin(theta * PI/180.0);
+ctrlPts[2].x -= 10*sin((theta+30) * PI/180.0);
+ctrlPts[2].y -= 10*sin((theta+30) * PI/180.0);
+ctrlPts[3].x-= 4*sin((theta) * PI/180.0);
+ctrlPts[3].y += sin((theta-30) * PI/180.0);
+theta+=0.1;
+glClear(GL_COLOR_BUFFER_BIT);
+glPointSize(5);
+glPushMatrix();
+glLineWidth(5);
+for(int i=0;i<24;i++)
+{
+glTranslatef(0, -0.8, 0);
+bezier(ctrlPts, nCtrlPts, nBezCurvePts);
+}
+glPopMatrix();
+glLineWidth(5);
+glBegin(GL_LINES);
+glVertex2f(20,100);
+glVertex2f(20,40);
+glEnd();
+glFlush();
+glutPostRedisplay();
+glutSwapBuffers();
+}
+void winReshapeFun(GLint newWidth, GLint newHeight)
+{
+glViewport(0, 0, newWidth, newHeight);
+glMatrixMode(GL_PROJECTION);
+glLoadIdentity();
+gluOrtho2D(xwcMin, xwcMax, ywcMin, ywcMax);
+glClear(GL_COLOR_BUFFER_BIT);
+}
+void d_menu(int op)
+{
+if(op==1)
+glColor3f(1.0,0.0,0.0);
+else if(op==2)
+glColor3f(0.0,1.0,0.0);
+else if(op==3)
+glColor3f(0.0,0.0,1.0);
+else if(op==4)
+exit(0);
+glutPostRedisplay();
+}
+void main(int argc, char **argv)
+{
+glutInit(&argc, argv);
+glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+glutInitWindowPosition(50, 50);
+glutInitWindowSize(winWidth, winHeight);
+glutCreateWindow("Bezier Curve");
+glutCreateMenu(d_menu);
+glutAddMenuEntry("Red",1);
+glutAddMenuEntry("Green",2);
+glutAddMenuEntry("Blue",3);
+glutAddMenuEntry("Quit",4);
+glutAttachMenu(GLUT_RIGHT_BUTTON);
+glutDisplayFunc(displayFcn);
+glutReshapeFunc(winReshapeFun);
+glutMainLoop();
+}
