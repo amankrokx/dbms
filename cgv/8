@@ -5,7 +5,7 @@
 typedef struct point
 {
 GLfloat x, y, z;
-};
+} point;
 void bino(int n, int *C)
 {
 int k, j;
@@ -67,19 +67,20 @@ glColor3f(1.0, 1.0, 1.0);
 glPointSize(5);
 glPushMatrix();
 glLineWidth(5);
-glColor3f(1, 0.4, 0.2); //Indian flag: Orange color code
+glColor3f(1, 0, 0); //Indian flag: Orange color code
+// glColor3f(1, 0.4, 0.2); //Indian flag: Orange color code
 for(int i=0;i<50;i++)
 {
 glTranslatef(0, -0.8, 0);
 bezier(ctrlPts, nCtrlPts, nBCPts);
 }
-glColor3f(1, 1, 1); //Indian flag: white color code
+// glColor3f(1, 1, 1); //Indian flag: white color code
 for(int i=0;i<50;i++)
 {
 glTranslatef(0, -0.8, 0);
 bezier(ctrlPts, nCtrlPts, nBCPts);
 }
-glColor3f(0, 1, 0); //Indian flag: green color code
+// glColor3f(0, 1, 0); //Indian flag: green color code
 for(int i=0;i<50;i++)
 {
 glTranslatef(0, -0.8, 0);
